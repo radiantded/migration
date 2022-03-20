@@ -1278,7 +1278,7 @@ def collect_data(directory):
     try:
         goods_name_template = 'MD_GOOD{}.DBF'
         mains_path = os.path.join(directory, "MD_MAINS.DBF")
-        big_dict = {
+        collected_data_dict = {
             r['NSER']: dict(r) for r in sorted(
                 DBF(mains_path, ignore_missing_memofile=True),
                 key=lambda x: x['NSER']) if start <= r['NSER'] < end
@@ -1297,30 +1297,29 @@ def collect_data(directory):
                         dbf_path) if start <= r['NSER'] < end
                 ]
                 for r in goods:
-                    big_dict[r['NSER']]['GOODS'] = r['GOODS']
+                    collected_data_dict[r['NSER']]['GOODS'] = r['GOODS']
         for root, _, files in os.walk(directory + "\\IMG\\"):
             for file in files:
                 if '.TIF' in file:
                     image_path = os.path.join(root, file)
                     name, ext = file.split('.')
                     if start <= int(name) < end:
-                        big_dict[int(name)]['IMAGE_PATH'] = image_path
-                        big_dict[int(name)]['IMAGE_NAME'] = name
-                        big_dict[int(name)]['IMAGE_TYPE'] = file_types[ext]
+                        collected_data_dict[int(name)]['IMAGE_PATH'] = image_path
+                        collected_data_dict[int(name)]['IMAGE_NAME'] = name
+                        collected_data_dict[int(name)]['IMAGE_TYPE'] = file_types[ext]
     except Exception as ex:
         exc_type, _, exc_tb = sys.exc_info()
         file_name = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         logging.error(
             ERROR_STRING.format(exc_type, file_name, exc_tb.tb_lineno, ex)
         )
-    return big_dict
+    return collected_data_dict
 
 
 @time_test
 def migrate():
-    big_dict = collect_data("{}{}".format(IMPORT_DIRECTORY, DB_FILE))
-    import_data(big_dict)
-    big_dict = {}
+    collected_data_dict = collect_data("{}{}".format(IMPORT_DIRECTORY, DB_FILE))
+    import_data(collected_data_dict)
     logging.info('Заливаем объекты хранения')
     execute_query_list(STORAGE_OBJECTS_QUERY, STORAGE_OBJECTS)
     logging.info('Заливаем узлы без значений')
