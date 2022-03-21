@@ -96,7 +96,8 @@ logging.basicConfig(
 )
 DATA_TYPES = {
     NONETYPE: [0, 'TextValue'],
-    str: [0, 'TextValue'], int: [1, 'IntValue'],
+    str: [0, 'TextValue'],
+    int: [1, 'IntValue'],
     float: [2, ' FloatValue'],
     datetime.date: [3, 'DateValue'],
     datetime.datetime: [3, 'DateValue'],
@@ -114,7 +115,8 @@ def time_test(func):
         result = round(int(t2 - t1) / 60, 1)
         logging.info(
             'Время выполнения функции {}: {} минут'.format(
-                func.__name__, result))
+                func.__name__, result)
+        )
         return res
     return f
 
@@ -419,12 +421,14 @@ def import_image(image_path, date, root_storage_obj_id,
         new_filename = '{}_1_{}.{}'.format(
             file_id.hex, image_name, extensions[image_type]
         )
-        folders = ['{}'.format(date.strftime("%Y")),
-                   '{}'.format(date.strftime("%m")),
-                   '{}'.format(date.strftime("%d")),
-                   '{}'.format(str(root_storage_obj_id).replace('-', '')),
-                   '{}'.format(str(storage_obj_id).replace('-', '')),
-                   'TRADEMARK_IMAGE']
+        folders = [
+            '{}'.format(date.strftime("%Y")),
+            '{}'.format(date.strftime("%m")),
+            '{}'.format(date.strftime("%d")),
+            '{}'.format(str(root_storage_obj_id).replace('-', '')),
+            '{}'.format(str(storage_obj_id).replace('-', '')),
+            'TRADEMARK_IMAGE'
+        ]
         path = '{}img_data\\'.format(DESTINATION) + "\\".join(folders)
         final_path = NFS + '/'.join(folders) + '/'
         os.makedirs(path, exist_ok=True)
