@@ -22,6 +22,8 @@ NSERS = []
 MAPPING = {}
 GOODS_DB_NAME = 'MD_GOOD{}.DBF'
 ERROR_STRING = '\033[31m Ошибка {} в файле {} в строке {}: {} \033[0m'
+
+# Данные для заполнения БД
 CERTIFICATES = []
 NODES = []
 SEARCH_ATTRS = []
@@ -74,24 +76,31 @@ WK_COUNT = 0
 MDRD_COUNT = 0
 APL_COUNT = 0
 APLCERT_COUNT = 0
+
+# Настройки логгирования
 CONSOLE_HANDLER = logging.StreamHandler()
 LOG_HANDLER = RotatingFileHandler(
     '{}sync/logs/{}_{}.log'.format(
         IMPORT_DIRECTORY, PACKAGE,
-        datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")),
+        datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
+    ),
     mode='a', maxBytes=50*1024*1024,
     backupCount=100, encoding='utf-8', delay=0)
-logging.basicConfig(handlers=(LOG_HANDLER, CONSOLE_HANDLER),
-                    format='[%(asctime)s | %(levelname)s]: %(message)s',
-                    datefmt=TIME_FORMAT,
-                    level=logging.INFO)
-DATA_TYPES = {NONETYPE: [0, 'TextValue'],
-              str: [0, 'TextValue'], int: [1, 'IntValue'],
-              float: [2, ' FloatValue'],
-              datetime.date: [3, 'DateValue'],
-              datetime.datetime: [3, 'DateValue'],
-              bool: [4, 'BoolValue'],
-              uuid.UUID: [6, 'GuidValue']}
+logging.basicConfig(
+    handlers=(LOG_HANDLER, CONSOLE_HANDLER),
+    format='[%(asctime)s | %(levelname)s]: %(message)s',
+    datefmt=TIME_FORMAT,
+    level=logging.INFO
+)
+DATA_TYPES = {
+    NONETYPE: [0, 'TextValue'],
+    str: [0, 'TextValue'], int: [1, 'IntValue'],
+    float: [2, ' FloatValue'],
+    datetime.date: [3, 'DateValue'],
+    datetime.datetime: [3, 'DateValue'],
+    bool: [4, 'BoolValue'],
+    uuid.UUID: [6, 'GuidValue']
+}
 
 
 def time_test(func):
@@ -109,22 +118,23 @@ def time_test(func):
 
 
 def connect_to_database(local=True):
-    if local:
-        connection = psycopg2.connect(
-            dbname=os.environ.get('local_dbname'),
-            user=os.environ.get('local_user'),
-            password=os.environ.get('local_password'),
-            host=os.environ.get('local_host'),
-            port=os.environ.get('local_port')
+    connection = psycopg2.connect(
+        dbname=os.environ.get(
+            'local_dbname' if local else 'dbname'
+        ),
+        user=os.environ.get(
+            'local_user' if local else 'user'
+        ),
+        password=os.environ.get(
+            'local_password' if local else 'password'
+        ),
+        host=os.environ.get(
+            'local_host' if local else 'host'
+        ),
+        port=os.environ.get(
+            'local_port' if local else 'port'
         )
-    else:
-        connection = psycopg2.connect(
-            dbname=os.environ.get('dbname'),
-            user=os.environ.get('user'),
-            password=os.environ.get('password'),
-            host=os.environ.get('host'),
-            port=os.environ.get('port')
-        )
+    )
     logging.info('Соединение установлено')
     cursor = connection.cursor()
     return connection, cursor
@@ -233,610 +243,7 @@ def create_attrs(root_storage_obj_id, node_string_id=None,
             'update_time': date,
             'delete_time': None
         },
-        'RUTmkPriority': {
-            'tmk_priority_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'priority_country': 'CFAP',
-            'priority_type': None,
-            'priority_date': 'DAPK',
-            'exhib_priority_date': 'DAPV',
-            'priority_appl_number': None,
-            'priority_appl_date': 'DFAP'
-        },
-        'RUTmkDisclaimer': {
-            'discl_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'language_code': None,
-            'disclaimers': None
-        },
-        'RUTmkCorrespondenceAddress': {
-            'address_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUTmkGoodsServices': {
-            'tmk_gs_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'classifier_version': None,
-            'goods_classes': None,
-            'definition': 'GOODS',
-            'definition_lang_code': None
-        },
-        'RUAppellation': {
-            'ruapl_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'appl_doc_link': None,
-            'appl_ui_link': None,
-            'appl_number': 'NAP',
-            'appl_date': 'DAP',
-            'appl_receiving_date': None,
-            'appl_publ_number': None,
-            'appl_publ_date': None,
-            'reg_ui_link': None,
-            'reg_doc_link': None,
-            'reg_number': 'NTM',
-            'reg_date': 'DPUB',
-            'reg_country': 'CU',
-            'reg_publ_number': None,
-            'reg_publ_date': None,
-            'appellation_of_goods': None,
-            'expiry_date': 'DEX',
-            'appellation_text': None,
-            'appellation_description': None,
-            'appellation_territory': None,
-            'appellation_property': None,
-            'appellation_condition': None,
-            'appellation_property_control': None,
-            'corr_address_text': 'MAIL2',
-            'corr_address_country': None,
-            'applicants': 'OWN2',
-            'applicants_count': None,
-            'representatives': None,
-            'representatives_count': None,
-            'representative_number': None,
-            'representatives_term': None,
-            'search_result': None,
-            'disclaimers': None,
-            'records': None,
-            'payment': None,
-            'corr_type': None,
-            'corr_method': None,
-            'sheets_count': None,
-            'image_sheets_count': None,
-            'payment_doc_count': None,
-            'status_code': 'SDACT',
-            'status_date': None,
-            'is_external_search': None,
-            'outgoing_correspondence': None,
-            'responsible_expert': 'EXPRTNAME',
-            'retro_number': 'NSER',
-            'update_time': date,
-            'delete_time': None
-        },
-        'RUAplDisclaimer': {
-            'discl_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'ruapl_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'language_code': None,
-            'disclaimers': None
-        },
-        'RUAplCorrespondenceAddress': {
-            'address_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'ruapl_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUAppellationCertificate': {
-            'ruaplcert_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'ruapl_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'appl_doc_link': None,
-            'appl_ui_link': None,
-            'appl_number': 'NAP',
-            'appl_date': 'DAP',
-            'appl_receiving_date': None,
-            'appl_publ_number': None,
-            'appl_publ_date': None,
-            'reg_ui_link': None,
-            'reg_doc_link': None,
-            'reg_number': 'NTM',
-            'reg_date': 'DPUB',
-            'reg_country': 'CU',
-            'reg_publ_number': None,
-            'reg_publ_date': None,
-            'appellation_of_goods': None,
-            'expiry_date': 'DEX',
-            'appellation_text': None,
-            'appellation_description': None,
-            'appellation_territory': None,
-            'appellation_property': None,
-            'appellation_condition': None,
-            'appellation_property_control': None,
-            'corr_address_text': 'MAIL2',
-            'corr_address_country': None,
-            'holders': 'OWN2',
-            'holders_count': None,
-            'representatives': None,
-            'representatives_count': None,
-            'representative_number': None,
-            'representatives_term': None,
-            'search_result': None,
-            'disclaimers': None,
-            'records': None,
-            'payment': None,
-            'corr_type': None,
-            'corr_method': None,
-            'sheets_count': None,
-            'image_sheets_count': None,
-            'payment_doc_count': None,
-            'status_code': 'SDACT',
-            'status_date': None,
-            'is_external_search': None,
-            'outgoing_correspondence': None,
-            'responsible_expert': 'EXPRTNAME',
-            'retro_number': 'NSER',
-            'update_time': date,
-            'delete_time': None,
-        },
-        'RUAplCertCorrespondenceAddress': {
-            'address_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'ruaplcert_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUTrademarkRepresentationFile': {
-            'represent_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'file_link': 'file_path',
-            'file_name': 'file_name',
-            'file_type': 'file_type',
-            'content': 'content',
-            'order': 0,
-            'height': 'height',
-            'width': 'width',
-            'length': None,
-            'description_text': None,
-            'representation_category': None,
-            'representation_sign': 'WWT',
-            'representation_colour': None,
-            'image_classification': None
-        },
-        'MadridTrademark': {
-            'mdtmk_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'appl_doc_link': None,
-            'appl_ui_link': None,
-            'appl_type': None,
-            'appl_receiving_date': None,
-            'appl_number': 'NAP',
-            'appl_date': 'DAP',
-            'reg_ui_link': None,
-            'reg_doc_link': None,
-            'reg_number': 'NTM',
-            'reg_date': 'DPUB',
-            'reg_country': 'CU',
-            'reg_publ_number': None,
-            'reg_publ_date': None,
-            'status_code': 'SDACT',
-            'status_date': 'SDIZM',
-            'expiry_date': 'DEX',
-            'seniority_priority_number': None,
-            'seniority_priority_date': None,
-            'priority_date': 'DAPK',
-            'exhib_priority_date': 'DAPV',
-            'divisional_appl_number': 'NPARENT',
-            'divisional_appl_date': None,
-            'other_date': None,
-            'corr_address': 'MAIL2',
-            'corr_address_country': None,  # ???
-            'applicants': None,
-            'applicants_count': None,
-            'holders': 'OWN2',
-            'holders_count': None,
-            'representatives': 'NPP',
-            'representatives_count': None,
-            'representative_number': 'KPP',
-            'representatives_term': None,
-            'users': None,
-            'users_count': None,
-            'mark_category': None,
-            'representation_names': 'IMAGE_NAME',
-            'search_result': None,
-            'goods': 'GS',
-            'prev_reg_number': None,
-            'prev_reg_date': None,
-            'prev_reg_country': None,
-            'feature_description': None,
-            'disclaimers': None,
-            'association_marks': None,
-            'payment': None,
-            'records': None,
-            'corr_type': None,
-            'corr_method': None,
-            'sheets_count': None,
-            'image_sheets_count': None,
-            'payment_doc_count': None,
-            'is_external_search': None,
-            'outgoing_correspondence': None,
-            'responsible_expert': 'EXPRTNAME',
-            'retro_number': 'NSER',
-            'update_time': date,
-            'delete_time': None
-        },
-        'MadridTmkPriority': {
-            'tmk_priority_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'priority_country': 'CFAP',
-            'priority_type': None,
-            'priority_date': 'DAPK',
-            'exhib_priority_date': 'DAPV',
-            'priority_appl_number': None,
-            'priority_appl_date': 'DFAP'
-        },
-        'MadridTmkDisclaimer': {
-            'discl_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'language_code': None,
-            'disclaimers': None
-        },
-        'MadridTmkCorrespondenceAddress': {
-            'address_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'MadridTmkGoodsServices': {
-            'tmk_gs_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'classifier_version': None,
-            'goods_classes': None,
-            'definition': 'GOODS',
-            'definition_lang_code': None
-        },
-        'MadridTrademarkRepresentationFile': {
-            'represent_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'file_link': 'file_path',
-            'file_name': 'file_name',
-            'file_type': 'file_type',
-            'content': 'content',
-            'order': 0,
-            'height': 'height',
-            'width': 'width',
-            'length': None,
-            'description_text': None,
-            'representation_category': None,
-            'representation_sign': 'WWT',
-            'representation_colour': None,
-            'image_classification': None
-        },
-        'WKTrademark': {
-            'wktmk_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'appl_doc_link': None,
-            'appl_ui_link': None,
-            'appl_type': None,
-            'appl_receiving_date': None,
-            'appl_number': 'NAP',
-            'appl_date': 'DAP',
-            'reg_ui_link': None,
-            'reg_doc_link': None,
-            'reg_number': 'NTM',
-            'reg_date': 'DPUB',
-            'reg_country': 'CU',
-            'reg_publ_number': None,
-            'reg_publ_date': None,
-            'status_code': 'SDACT',
-            'status_date': None,
-            'expiry_date': 'DEX',
-            'seniority_priority_number': None,
-            'seniority_priority_date': None,
-            'priority_date': 'DAPK',
-            'divisional_appl_number': 'NPARENT',
-            'divisional_appl_date': None,
-            'other_date': None,
-            'corr_address': 'MAIL2',
-            'corr_address_country': None,
-            'applicants': 'OWN2',
-            'applicants_count': None,
-            'holders': None,
-            'holders_count': None,
-            'representatives': None,
-            'representatives_count': None,
-            'representative_number': None,
-            'representatives_term': None,
-            'users': None,
-            'users_count': None,
-            'mark_category': None,
-            'representation_names': 'IMAGE_NAME',
-            'feature_category': None,
-            'search_result': None,
-            'goods': 'GS',
-            'prev_reg_number': None,
-            'prev_reg_date': None,
-            'prev_reg_country': None,
-            'feature_description': None,
-            'disclaimers': None,
-            'association_marks': None,
-            'payment': None,
-            'records': None,
-            'corr_type': None,
-            'corr_method': None,
-            'sheets_count': None,
-            'image_sheets_count': None,
-            'payment_doc_count': None,
-            'is_external_search': None,
-            'outgoing_correspondence': None,
-            'responsible_expert': 'EXPRTNAME',
-            'retro_number': 'NSER',
-            'update_time': date,
-            'delete_time': None
-        },
-        'WKTmkPriority': {
-            'tmk_priority_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'priority_date': 'DAPK',
-            'exhib_priority_date': 'DAPV',
-            'priority_appl_number': None,
-            'priority_appl_date': 'DFAP',
-            'priority_country': 'CFAP',
-            'priority_type': None
-        },
-        'WKTmkDisclaimer': {
-            'discl_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'language_code': None,
-            'disclaimers': None
-        },
-        'WKTmkCorrespondenceAddress': {
-            'address_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'WKTmkGoodsServices': {
-            'tmk_gs_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'classifier_version': None,
-            'goods_classes': None,
-            'definition': 'GOODS',
-            'definition_lang_code': None
-        },
-        'WKTrademarkRepresentationFile': {
-            'represent_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'file_link': 'file_path',
-            'file_name': 'file_name',
-            'file_type': 'file_type',
-            'content': 'content',
-            'order': 0,
-            'height': 'height',
-            'width': 'width',
-            'length': None,
-            'description_text': None
-        },
-        'CorrespondenceAddress': {
-            'address_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'address_text': 'MAIL2',
-            'language_code': None,
-            'country_code': 'CU',
-            'postal_code': 'M_INDEX',
-            'region_name': 'M_SUBJ',
-            'province_name': 'M_SUBC',
-            'city_name': 'M_CITY',
-            'address_line': None,
-            'addressee': 'OWN2',
-            'update_time': date,
-            'delete_time': None
-        },
-        'Contact': {
-            'contact_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'language_code': None,
-            'name': '{}'.format(
-                "OWN2" if mode in ("holder", "applicant") else "NPP"),
-            'name_translit': None,
-            'nationality_code': '{}'.format(
-                "CU") if mode in ("holder", "applicant") else None,
-            'mdtmk_applications': None,
-            'mdtmk_appl_count': None,
-            'wktmk_used': None,
-            'wktmk_used_count': None,
-            'wktmk_registrations': None,
-            'wktmk_reg_count': None,
-            'wktmk_applications': None,
-            'wktmk_appl_count': None,
-            'phone': None,
-            'fax': None,
-            'rutmk_used': None,
-            'email': None,
-            'address_text': '{}'.format(
-                "MAIL") if mode in ("holder", "applicant") else None,
-            'country_code': '{}'.format(
-                "CU") if mode in ("holder", "applicant") else None,
-            'postal_code': '{}'.format(
-                "M_INDEX") if mode in ("holder", "applicant") else None,
-            'region_name': '{}'.format(
-                "M_SUBJ") if mode in ("holder", "applicant") else None,
-            'province_name': '{}'.format(
-                "M_SUBC") if mode in ("holder", "applicant") else None,
-            'city_name': '{}'.format(
-                "M_CITY") if mode in ("holder", "applicant") else None,
-            'address_line': None,
-            'incorporation': 'OWNS',
-            'employee_number': '{}'.format(
-                "OKPO") if mode in ("holder", "applicant") else None,
-            'inn': None,
-            'kio': None,
-            'customer_number': None,
-            'ogrn': None,
-            'snils': None,
-            'individual_id': None,
-            'passport_number': None,
-            'rutmk_appl_count': None,
-            'rutmk_applications': None,
-            'rutmk_reg_count': None,
-            'rutmk_registrations': None,
-            'rutmk_used_count': None,
-            'mdtmk_reg_count': None,
-            'mdtmk_registrations': None,
-            'mdtmk_used_count': None,
-            'mdtmk_used': None,
-            'ruapl_appl_count': None,
-            'ruapl_appl_applications': None,
-            'ruapl_reg_count': None,
-            'ruapl_registrations': None,
-            'ruapl_used_count': None,
-            'ruapl_used': None,
-            'update_time': date,
-            'delete_time': None
-        },
-        'ContactAddress': {
-            'address_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'contact_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'language_code': None,
-            'address_text': '{}'.format(
-                "MAIL") if mode in ("holder", "applicant") else None,
-            'country_code': '{}'.format(
-                "CU") if mode in ("holder", "applicant") else None,
-            'postal_code': '{}'.format(
-                "M_INDEX") if mode in ("holder", "applicant") else None,
-            'region_name': '{}'.format(
-                "M_SUBJ") if mode in ("holder", "applicant") else None,
-            'province_name': '{}'.format(
-                "M_SUBC") if mode in ("holder", "applicant") else None,
-            'city_name': '{}'.format(
-                "M_CITY") if mode in ("holder", "applicant") else None,
-            'address_line': None,
-            'addressee': '{}'.format(
-                "OWN2" if mode in ("holder", "applicant") else "NPP"),
-            'update_time': date,
-            'delete_time': None
-        },
-        'ContactName': {
-            'name_uid': uuid.UUID(
-                node_string_id) if node_string_id else None,
-            'contact_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None,
-            'language_code': None,
-            'name': '{}'.format(
-                "OWN2" if mode in ("holder", "applicant") else "NPP")
-        },
-        'RUTmkApplicant': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUTmkHolder': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'WKTmkHolder': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'WKTmkApplicant': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'WKTmkRepresentative': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'wktmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUAplApplicant': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'ruapl_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUAplRepresentative': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'ruapl_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUAplCertApplicant': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'ruaplcert_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUAplCertHolder': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'ruaplcert_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUAplCertRepresentative': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'ruaplcert_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'RUTmkRepresentative': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'rutmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'MadridTmkApplicant': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'MadridTmkHolder': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        },
-        'MadridTmkRepresentative': {
-            'contact_uid': uuid.UUID(
-                main_table_id) if main_table_id else None,
-            'mdtmk_uid': uuid.UUID(
-                parent_node_id) if parent_node_id else None
-        }
-    }
+        
     wrong_values = ['TM_DAT__', 'NSER', 'NAP', 'NAPTW',
                     'TWICE', 'DAP', 'CU', 'IS', 'WCD']
     try:
