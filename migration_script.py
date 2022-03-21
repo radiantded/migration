@@ -12,6 +12,8 @@ from psycopg2 import extras
 from dbfread import DBF
 from PIL import Image
 
+
+# Общие настройки
 PACKAGE = '101'
 DB_FILE = '00000001'
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -243,7 +245,7 @@ def create_attrs(root_storage_obj_id, node_string_id=None,
             'update_time': date,
             'delete_time': None
         },
-        
+    }
     wrong_values = ['TM_DAT__', 'NSER', 'NAP', 'NAPTW',
                     'TWICE', 'DAP', 'CU', 'IS', 'WCD']
     try:
