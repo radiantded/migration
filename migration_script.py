@@ -20,15 +20,9 @@ TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 IMPORT_DIRECTORY = "C:\\Dev\\"
 DESTINATION = 'C:\\Dev\\export\\'
 NFS = '/mnt/nfs/data/datamart/'
-NSERS = []
-MAPPING = {}
-GOODS_DB_NAME = 'MD_GOOD{}.DBF'
 ERROR_STRING = '\033[31m Ошибка {} в файле {} в строке {}: {} \033[0m'
 
 # Данные для заполнения БД
-CERTIFICATES = []
-NODES = []
-SEARCH_ATTRS = []
 STRUCTURE_ID = '100'
 STATE = '0'
 UNKNOWN_DATE = '0001-01-01 00:00:00'
@@ -73,6 +67,8 @@ ATTRS_QUERY = """
 ATTRS_VALUES = []
 CREATED_BY = 'EA_Migration_{}'.format(PACKAGE)
 NONETYPE = type(None)
+
+# Счётчики ОИС
 TMK_COUNT = 0
 WK_COUNT = 0
 MDRD_COUNT = 0
